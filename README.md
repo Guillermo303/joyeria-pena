@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portal Web — Joyería Peña (React / Next.js)
 
-## Getting Started
+Versión en React del prototipo original (`../web`), migrada a **Next.js 16** con TypeScript y Tailwind CSS v4, pensada para poder conectarse más adelante a un sistema de inventario real.
 
-First, run the development server:
+## Cómo correrlo
 
 ```bash
+npm install   # solo la primera vez
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estructura
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+  app/
+    page.tsx                 -> Inicio
+    colecciones/page.tsx     -> Catálogo
+    producto/[id]/page.tsx   -> Detalle de una pieza (ruta dinámica)
+    portal/page.tsx          -> Portal de inventario
+    globals.css              -> Sistema de diseño (colores, tipografías, radios)
+  components/
+    Header.tsx                -> Barra superior + menú móvil (mismo header en todas las páginas)
+    Footer.tsx
+    Reveal.tsx                -> Animación de aparición al hacer scroll
+  lib/
+    products.ts                -> "Base de datos" del catálogo (mock)
+    inventory.ts                -> "Base de datos" del inventario (mock)
+```
 
-## Learn More
+## Cómo conectarlo a un inventario real
 
-To learn more about Next.js, take a look at the following resources:
+Todo el contenido dinámico pasa por dos únicos archivos:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **`src/lib/products.ts`** — `getProducts()` y `getProductById()`. Hoy devuelven un arreglo fijo; el día que haya una API (por ejemplo leyendo `BDJT2.mdb` desde un backend), estas dos funciones son las únicas que hay que cambiar por un `fetch(...)` a esa API. Ninguna página necesita tocarse.
+- **`src/lib/inventory.ts`** — `getInventory()` y `getInventoryMetrics()`. Mismo patrón, pensado para conectarse al control de existencias/reparaciones real.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Como las páginas ya son componentes de servidor async (`await getProducts()`), cambiar el mock por una llamada real a una API es un cambio local a `lib/`, sin tocar la interfaz.
 
-## Deploy on Vercel
+## Sistema de diseño
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Los tokens de color, tipografía (Playfair Display + Inter) y las clases de texto (`text-display-lg`, `text-headline-md`, `text-label-caps`, etc.) están definidos en `src/app/globals.css` usando `@theme` de Tailwind v4, replicando el diseño exportado desde Stitch.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Despliegue en Render (Sitio Estático)
+
+El proyecto está configurado para generar un sitio 100% estático (`output: "export"` en
+`next.config.ts`), que se publica como **Static Site** en Render.
+
+**Primera vez:**
+
+1. Entra a [render.com](https://render.com) e inicia sesión (puedes usar tu cuenta de GitHub).
+2. **New +** → **Blueprint** (o **Static Site**) y selecciona este repositorio.
+3. Si usas Blueprint, Render leerá `render.yaml` automáticamente. Si lo configuras a mano:
+   - **Build Command:** `npm install && npm run build`
+   - **Publish Directory:** `out`
+4. **Create** y espera a que termine el primer build.
+
+**Actualizar la página después:** solo haz `git push` a la rama conectada. Render detecta
+el cambio, reconstruye y publica la nueva versión automáticamente.
+
+```bash
+git add -A
+git commit -m "Mis cambios"
+git push
+```
+
+## Pendientes / siguientes pasos
+
+- Sustituir las imágenes de muestra (`lh3.googleusercontent.com`) por fotos reales de las piezas.
+- Definir e implementar la API/backend que alimente `lib/products.ts` y `lib/inventory.ts`.
+- Añadir lógica real a los botones ("Añadir a la Bolsa", "Agendar Cita", "Agregar Pieza").
+- Autenticación para el Portal de Inventario si va a manejar datos sensibles.

@@ -1,0 +1,11 @@
+# Configuración de despliegue para Render (https://render.com)
+# Al conectar este repositorio como "Blueprint", Render lee este archivo
+# y crea el sitio estático automáticamente.
+#
+# Cada `git push` a la rama conectada vuelve a construir y publicar el sitio.
+services:
+  - type: web
+    name: joyeria-pena
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./out
