@@ -43,19 +43,22 @@ Como las páginas ya son componentes de servidor async (`await getProducts()`), 
 
 Los tokens de color, tipografía (Playfair Display + Inter) y las clases de texto (`text-display-lg`, `text-headline-md`, `text-label-caps`, etc.) están definidos en `src/app/globals.css` usando `@theme` de Tailwind v4, replicando el diseño exportado desde Stitch.
 
-## Despliegue en Render (Sitio Estático)
+## Despliegue en Render (Servicio Web)
 
-El proyecto está configurado para generar un sitio 100% estático (`output: "export"` en
-`next.config.ts`), que se publica como **Static Site** en Render.
+El proyecto corre como servicio Node (`next start`), publicado como **Web Service** en Render
+(ya no es un sitio estático, porque `/api/auth/*` necesita ejecutar código de servidor para
+hablar con MySQL).
 
 **Primera vez:**
 
 1. Entra a [render.com](https://render.com) e inicia sesión (puedes usar tu cuenta de GitHub).
-2. **New +** → **Blueprint** (o **Static Site**) y selecciona este repositorio.
+2. **New +** → **Blueprint** (o **Web Service**) y selecciona este repositorio.
 3. Si usas Blueprint, Render leerá `render.yaml` automáticamente. Si lo configuras a mano:
    - **Build Command:** `npm install && npm run build`
-   - **Publish Directory:** `out`
-4. **Create** y espera a que termine el primer build.
+   - **Start Command:** `npm start`
+4. Configura las variables de entorno `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` y
+   `DB_NAME` apuntando a tu MySQL en la nube (Render no ofrece MySQL gestionado).
+5. **Create** y espera a que termine el primer build.
 
 **Actualizar la página después:** solo haz `git push` a la rama conectada. Render detecta
 el cambio, reconstruye y publica la nueva versión automáticamente.
@@ -66,9 +69,35 @@ git commit -m "Mis cambios"
 git push
 ```
 
+## Cuentas de usuario (registro / inicio de sesión)
+
+El sitio incluye registro e inicio de sesión con contraseñas guardadas (con hash) en MySQL:
+
+- `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+- Páginas: `/registro`, `/login`, `/cuenta`
+- La sesión se guarda en una cookie httpOnly firmada (JWT), válida 7 días.
+
+**Configuración local:**
+
+1. Instala un servidor MySQL/MariaDB (ver más abajo) y crea la base con el esquema en
+   [`db/schema.sql`](db/schema.sql):
+   ```bash
+   mysql -u root -p < db/schema.sql
+   ```
+2. Copia `.env.example` a `.env.local` y completa `DB_HOST`, `DB_USER`, `DB_PASSWORD`,
+   `DB_NAME` y `SESSION_SECRET` (una cadena aleatoria larga).
+3. `npm run dev` — las rutas `/registro` y `/login` ya deberían funcionar.
+
+**Para producción (Render):** este proyecto ahora corre como servicio Node (`next start`), no
+como sitio estático, porque necesita ejecutar `/api/auth/*` en el servidor. Render no ofrece
+MySQL gestionado, así que aloja la base en un proveedor externo (por ejemplo
+[Railway](https://railway.app) o [Aiven](https://aiven.io)) y configura las variables de
+entorno correspondientes en el panel de Render (ver comentarios en `render.yaml`).
+
 ## Pendientes / siguientes pasos
 
 - Sustituir las imágenes de muestra (`lh3.googleusercontent.com`) por fotos reales de las piezas.
 - Definir e implementar la API/backend que alimente `lib/products.ts` y `lib/inventory.ts`.
 - Añadir lógica real a los botones ("Añadir a la Bolsa", "Agendar Cita", "Agregar Pieza").
-- Autenticación para el Portal de Inventario si va a manejar datos sensibles.
+- Proteger el Portal de Inventario con autenticación (hoy cualquier usuario logueado puede
+  entrar; falta un rol de "administrador" si se quiere restringir).

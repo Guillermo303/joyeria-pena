@@ -59,7 +59,7 @@ export default async function PortalPage() {
           </li>
           <li>
             <Link
-              href="#"
+              href="/cuenta"
               className="flex items-center gap-4 py-3 px-4 font-body text-label-caps uppercase text-on-surface-variant hover:bg-surface-variant transition-colors duration-300"
             >
               <span className="material-symbols-outlined">person</span>

@@ -1,11 +1,31 @@
 # Configuración de despliegue para Render (https://render.com)
 # Al conectar este repositorio como "Blueprint", Render lee este archivo
-# y crea el sitio estático automáticamente.
+# y crea el servicio web automáticamente.
 #
 # Cada `git push` a la rama conectada vuelve a construir y publicar el sitio.
+#
+# El sitio ya no es estático: corre con `next start` porque /api/auth/*
+# necesita servidor para hablar con la base de datos MySQL. Antes de
+# desplegar, crea las variables de entorno DB_HOST, DB_PORT, DB_USER,
+# DB_PASSWORD, DB_NAME y SESSION_SECRET en el panel de Render (apuntando a
+# tu MySQL en la nube, por ejemplo Railway o Aiven).
 services:
   - type: web
     name: joyeria-pena
-    runtime: static
+    runtime: node
+    plan: free
     buildCommand: npm install && npm run build
-    staticPublishPath: ./out
+    startCommand: npm start
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true

@@ -68,7 +68,7 @@ export default function Header() {
               <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-secondary transition-all duration-300 group-hover:w-full" />
             </Link>
             <Link
-              href="#"
+              href="/cuenta"
               className="hidden md:flex font-body text-label-caps text-tertiary hover:text-secondary transition-colors duration-300 relative group"
             >
               Cuenta
@@ -124,7 +124,7 @@ export default function Header() {
             Portal Inventario
           </Link>
           <Link
-            href="#"
+            href="/cuenta"
             onClick={() => setDrawerOpen(false)}
             className="font-body text-label-caps text-on-surface-variant hover:text-secondary transition-colors duration-300 flex items-center gap-4 group"
           >
