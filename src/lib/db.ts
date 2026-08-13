@@ -1,10 +1,26 @@
 import mysql from "mysql2/promise";
+import { readFileSync } from "fs";
+import path from "path";
 
 declare global {
   var _mysqlPool: mysql.Pool | undefined;
 }
 
+function loadCaCert(): string | undefined {
+  // El certificado de Aiven es información pública (no un secreto), por eso
+  // vive en el repo en una ruta fija (para que el bundler la trace bien y
+  // no incluya el proyecto entero en el deploy).
+  try {
+    return readFileSync(path.join(process.cwd(), "db", "aiven-ca.pem"), "utf8");
+  } catch {
+    return undefined;
+  }
+}
+
 function createPool() {
+  const useSsl = process.env.DB_SSL === "true";
+  const ca = useSsl ? loadCaCert() : undefined;
+
   return mysql.createPool({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT ?? 3306),
@@ -14,6 +30,7 @@ function createPool() {
     waitForConnections: true,
     connectionLimit: 10,
     charset: "utf8mb4",
+    ssl: useSsl ? (ca ? { ca } : { rejectUnauthorized: true }) : undefined,
   });
 }
 
