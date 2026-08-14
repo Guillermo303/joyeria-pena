@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import AddToCartButton from "@/components/AddToCartButton";
 import { getProductById, getProducts } from "@/lib/products";
 
 export async function generateStaticParams() {
@@ -78,9 +79,12 @@ export default async function ProductoPage({
             </div>
           )}
           <div className="flex flex-col gap-4 mt-auto">
-            <button className="w-full bg-primary text-on-primary font-body text-button uppercase py-4 hover:bg-tertiary-container transition-colors duration-300">
-              Añadir a la Bolsa
-            </button>
+            <AddToCartButton
+              id={product.id}
+              name={product.name}
+              price={product.price}
+              image={product.image}
+            />
             <button className="w-full bg-surface-container-lowest text-primary border border-outline-variant font-body text-button uppercase py-4 hover:bg-surface-container-low transition-colors duration-300">
               Agendar Consulta
             </button>

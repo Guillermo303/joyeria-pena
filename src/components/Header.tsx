@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useCart } from "@/lib/cart-context";
 
 const navLinks = [
   { href: "/colecciones", label: "Colecciones" },
@@ -12,6 +13,7 @@ const navLinks = [
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { totalCount } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -74,12 +76,18 @@ export default function Header() {
               Cuenta
               <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-secondary transition-all duration-300 group-hover:w-full" />
             </Link>
-            <button
+            <Link
+              href="/carrito"
               aria-label="Bolsa de compras"
-              className="text-tertiary hover:text-secondary transition-colors duration-300 flex items-center justify-center p-2"
+              className="relative text-tertiary hover:text-secondary transition-colors duration-300 flex items-center justify-center p-2"
             >
               <span className="material-symbols-outlined text-[24px]">shopping_bag</span>
-            </button>
+              {totalCount > 0 && (
+                <span className="absolute top-0 right-0 min-w-[18px] h-[18px] px-1 rounded-full bg-tertiary text-on-tertiary text-[10px] font-body font-semibold flex items-center justify-center">
+                  {totalCount}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </header>
