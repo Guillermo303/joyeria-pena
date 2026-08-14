@@ -4,11 +4,11 @@
 #
 # Cada `git push` a la rama conectada vuelve a construir y publicar el sitio.
 #
-# El sitio ya no es estático: corre con `next start` porque /api/auth/*
-# necesita servidor para hablar con la base de datos MySQL. Antes de
-# desplegar, crea las variables de entorno DB_HOST, DB_PORT, DB_USER,
-# DB_PASSWORD, DB_NAME y SESSION_SECRET en el panel de Render (apuntando a
-# tu MySQL en la nube, por ejemplo Railway o Aiven).
+# El sitio ya no es estático: corre con `next start` porque /api/auth/* y
+# /api/orders necesitan servidor para hablar con la base de datos MySQL.
+# Todas las variables DB_* y DB_SSL son manuales (sync: false) porque
+# dependen del proveedor de MySQL que uses (por ejemplo Aiven) y no deben
+# reescribirse solas en cada sync del blueprint.
 services:
   - type: web
     name: joyeria-pena
@@ -20,12 +20,14 @@ services:
       - key: DB_HOST
         sync: false
       - key: DB_PORT
-        value: "3306"
+        sync: false
       - key: DB_USER
         sync: false
       - key: DB_PASSWORD
         sync: false
       - key: DB_NAME
+        sync: false
+      - key: DB_SSL
         sync: false
       - key: SESSION_SECRET
         generateValue: true
