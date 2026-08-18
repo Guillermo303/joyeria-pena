@@ -28,7 +28,8 @@ export default function LoginPage() {
         setError(data.error ?? "No se pudo iniciar sesión.");
         return;
       }
-      router.push("/cuenta");
+      const isStaff = ["vendedor", "socio", "admin"].includes(data.user?.role);
+      router.push(isStaff ? "/admin" : "/cuenta");
       router.refresh();
     } finally {
       setLoading(false);

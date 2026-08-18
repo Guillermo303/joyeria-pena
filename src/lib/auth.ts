@@ -3,6 +3,11 @@ import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "session";
 
+export type Role = "cliente" | "vendedor" | "socio" | "admin";
+
+// Roles con acceso al panel interno (/admin). "cliente" nunca entra ahi.
+export const STAFF_ROLES: Role[] = ["vendedor", "socio", "admin"];
+
 function getSecretKey() {
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
@@ -15,6 +20,7 @@ export type SessionPayload = {
   userId: number;
   name: string;
   email: string;
+  role: Role;
 };
 
 export async function createSessionToken(payload: SessionPayload) {
@@ -40,4 +46,8 @@ export async function getCurrentUser(): Promise<SessionPayload | null> {
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   return verifySessionToken(token);
+}
+
+export function isStaff(role: Role): boolean {
+  return STAFF_ROLES.includes(role);
 }

@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import type { RowDataPacket } from "mysql2";
 import pool from "@/lib/db";
-import { createSessionToken, SESSION_COOKIE } from "@/lib/auth";
+import { createSessionToken, SESSION_COOKIE, type Role } from "@/lib/auth";
 
 interface UserRow extends RowDataPacket {
   id: number;
   name: string;
   email: string;
   password_hash: string;
+  role: Role;
 }
 
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 días
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
   let user: UserRow | undefined;
   try {
     const [rows] = await pool.query<UserRow[]>(
-      "SELECT id, name, email, password_hash FROM users WHERE email = ? LIMIT 1",
+      "SELECT id, name, email, password_hash, role FROM users WHERE email = ? LIMIT 1",
       [email],
     );
     user = rows[0];
@@ -51,8 +52,15 @@ export async function POST(request: Request) {
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) return invalidCredentials;
 
-  const token = await createSessionToken({ userId: user.id, name: user.name, email: user.email });
-  const response = NextResponse.json({ user: { name: user.name, email: user.email } });
+  const token = await createSessionToken({
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  });
+  const response = NextResponse.json({
+    user: { name: user.name, email: user.email, role: user.role },
+  });
   response.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

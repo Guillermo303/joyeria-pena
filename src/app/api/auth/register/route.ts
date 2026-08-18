@@ -40,8 +40,10 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
+    // El registro publico siempre crea clientes. Los roles de staff
+    // (vendedor/socio/admin) solo los asigna un admin desde /admin/usuarios.
     const [result] = await pool.query<ResultSetHeader>(
-      "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+      "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, 'cliente')",
       [name, email, passwordHash],
     );
     insertId = result.insertId;
@@ -57,8 +59,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const token = await createSessionToken({ userId: insertId, name, email });
-  const response = NextResponse.json({ user: { name, email } }, { status: 201 });
+  const token = await createSessionToken({ userId: insertId, name, email, role: "cliente" });
+  const response = NextResponse.json({ user: { name, email, role: "cliente" } }, { status: 201 });
   response.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

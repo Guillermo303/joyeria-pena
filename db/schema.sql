@@ -11,11 +11,14 @@ CREATE DATABASE IF NOT EXISTS joyeria_pena
 
 USE joyeria_pena;
 
+-- Roles: 'cliente' se autoregistra desde /registro. Los demas (staff) solo
+-- los puede crear un admin desde el panel /admin/usuarios.
 CREATE TABLE IF NOT EXISTS users (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(120) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
+  role ENUM('cliente', 'vendedor', 'socio', 'admin') NOT NULL DEFAULT 'cliente',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
