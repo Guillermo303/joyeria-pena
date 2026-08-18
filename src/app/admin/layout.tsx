@@ -28,13 +28,35 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             >
               Inicio
             </Link>
-            {user.role === "admin" && (
+            <Link
+              href="/admin/ventas/nueva"
+              className="font-body text-label-caps text-tertiary hover:text-secondary transition-colors"
+            >
+              Nueva Venta
+            </Link>
+            {(user.role === "admin" || user.role === "socio") && (
               <Link
-                href="/admin/usuarios"
+                href="/admin/reportes"
                 className="font-body text-label-caps text-tertiary hover:text-secondary transition-colors"
               >
-                Usuarios
+                Reportes
               </Link>
+            )}
+            {user.role === "admin" && (
+              <>
+                <Link
+                  href="/admin/usuarios"
+                  className="font-body text-label-caps text-tertiary hover:text-secondary transition-colors"
+                >
+                  Usuarios
+                </Link>
+                <Link
+                  href="/admin/sucursales"
+                  className="font-body text-label-caps text-tertiary hover:text-secondary transition-colors"
+                >
+                  Sucursales
+                </Link>
+              </>
             )}
             <Link
               href="/"

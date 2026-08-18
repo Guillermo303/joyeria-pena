@@ -3,11 +3,15 @@
 import { useEffect, useState } from "react";
 import type { Role } from "@/lib/auth";
 
+type Sucursal = { id: number; name: string; address: string | null };
+
 type StaffUser = {
   id: number;
   name: string;
   email: string;
   role: Role;
+  sucursalId: number | null;
+  sucursalName: string | null;
   createdAt: string;
 };
 
@@ -23,9 +27,11 @@ const roleOptions: Role[] = ["cliente", "vendedor", "socio", "admin"];
 export default function UsersTable({
   initialUsers,
   currentUserId,
+  sucursales,
 }: {
   initialUsers: StaffUser[];
   currentUserId: number;
+  sucursales: Sucursal[];
 }) {
   const [users, setUsers] = useState(initialUsers);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +65,27 @@ export default function UsersTable({
     }
   }
 
+  async function handleSucursalChange(id: number, sucursalId: number | null) {
+    setError(null);
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/admin/users/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sucursalId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo actualizar la sucursal.");
+        return;
+      }
+      const sucursalName = sucursales.find((s) => s.id === sucursalId)?.name ?? null;
+      setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, sucursalId, sucursalName } : u)));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function handleDelete(id: number, name: string) {
     if (!confirm(`¿Eliminar la cuenta de ${name}? Esta acción no se puede deshacer.`)) return;
     setError(null);
@@ -84,7 +111,7 @@ export default function UsersTable({
         </p>
       )}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[560px]">
+        <table className="w-full text-left border-collapse min-w-[720px]">
           <thead>
             <tr>
               <th className="font-body text-label-caps text-on-surface-variant uppercase p-4 border-b border-outline-variant/50">
@@ -95,6 +122,9 @@ export default function UsersTable({
               </th>
               <th className="font-body text-label-caps text-on-surface-variant uppercase p-4 border-b border-outline-variant/50">
                 Rol
+              </th>
+              <th className="font-body text-label-caps text-on-surface-variant uppercase p-4 border-b border-outline-variant/50">
+                Sucursal
               </th>
               <th className="font-body text-label-caps text-on-surface-variant uppercase p-4 border-b border-outline-variant/50 text-right">
                 Acciones
@@ -120,6 +150,23 @@ export default function UsersTable({
                     ))}
                   </select>
                 </td>
+                <td className="p-4">
+                  <select
+                    value={u.sucursalId ?? ""}
+                    disabled={busyId === u.id || u.role === "cliente"}
+                    onChange={(e) =>
+                      handleSucursalChange(u.id, e.target.value ? Number(e.target.value) : null)
+                    }
+                    className="bg-surface-container-low border border-outline-variant px-2 py-1 font-body text-body-md text-tertiary disabled:opacity-60"
+                  >
+                    <option value="">Sin asignar</option>
+                    {sucursales.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
                 <td className="p-4 text-right">
                   <button
                     onClick={() => handleDelete(u.id, u.name)}
@@ -134,7 +181,7 @@ export default function UsersTable({
             ))}
             {users.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-8 text-center text-on-surface-variant">
+                <td colSpan={5} className="p-8 text-center text-on-surface-variant">
                   No hay usuarios todavía.
                 </td>
               </tr>

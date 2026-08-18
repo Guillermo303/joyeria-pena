@@ -11,12 +11,15 @@ const roleOptions: { value: Role; label: string }[] = [
   { value: "cliente", label: "Cliente" },
 ];
 
-export default function CreateUserForm() {
+type Sucursal = { id: number; name: string; address: string | null };
+
+export default function CreateUserForm({ sucursales }: { sucursales: Sucursal[] }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("vendedor");
+  const [sucursalId, setSucursalId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,7 +33,13 @@ export default function CreateUserForm() {
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+          sucursalId: sucursalId ? Number(sucursalId) : null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -41,6 +50,7 @@ export default function CreateUserForm() {
       setEmail("");
       setPassword("");
       setRole("vendedor");
+      setSucursalId("");
       setSuccess(true);
       router.refresh();
     } finally {
@@ -107,6 +117,24 @@ export default function CreateUserForm() {
           {roleOptions.map((r) => (
             <option key={r.value} value={r.value}>
               {r.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="flex flex-col gap-2">
+        <span className="font-body text-label-caps text-on-surface-variant uppercase tracking-widest">
+          Sucursal (opcional)
+        </span>
+        <select
+          value={sucursalId}
+          onChange={(e) => setSucursalId(e.target.value)}
+          className="w-full bg-transparent border border-outline-variant px-2 py-2 font-body text-body-md text-tertiary"
+        >
+          <option value="">Sin asignar</option>
+          {sucursales.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
             </option>
           ))}
         </select>

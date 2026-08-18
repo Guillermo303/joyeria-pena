@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getAllUsers } from "@/lib/users";
+import { getAllSucursales } from "@/lib/sucursales";
 import UsersTable from "@/components/admin/UsersTable";
 import CreateUserForm from "@/components/admin/CreateUserForm";
 
@@ -14,7 +15,7 @@ export default async function UsuariosPage() {
     redirect("/admin");
   }
 
-  const users = await getAllUsers();
+  const [users, sucursales] = await Promise.all([getAllUsers(), getAllSucursales()]);
 
   return (
     <div>
@@ -26,10 +27,14 @@ export default async function UsuariosPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8">
-          <UsersTable initialUsers={users} currentUserId={currentUser.userId} />
+          <UsersTable
+            initialUsers={users}
+            currentUserId={currentUser.userId}
+            sucursales={sucursales}
+          />
         </div>
         <div className="lg:col-span-4">
-          <CreateUserForm />
+          <CreateUserForm sucursales={sucursales} />
         </div>
       </div>
     </div>

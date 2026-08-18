@@ -25,6 +25,10 @@ export async function POST(request: Request) {
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body?.password === "string" ? body.password : "";
   const role = typeof body?.role === "string" ? body.role : "";
+  const sucursalId =
+    typeof body?.sucursalId === "number" && Number.isFinite(body.sucursalId)
+      ? body.sucursalId
+      : null;
 
   if (!name || !email || !password) {
     return NextResponse.json(
@@ -46,7 +50,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await createUser({ name, email, password, role: role as never });
+    const result = await createUser({ name, email, password, role: role as never, sucursalId });
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: 409 });
     }
